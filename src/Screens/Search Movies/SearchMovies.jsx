@@ -16,11 +16,14 @@ const SearchMovies = ({ navigation }) => {
     const [searchList, setSearchList] = useState([]);
     const [showLoader, setShowLoader] = useState(false);
 
-    const { moviesList } = useSelector((state) => ({
+    const { moviesList, searchMoviesList, totalPages } = useSelector((state) => ({
         moviesList: state?.moviesReducer?.moviesList,
+        totalPages: state?.moviesReducer?.totalPages,
+        searchMoviesList: state?.moviesReducer?.searchMoviesList,
     }), shallowEqual);
 
     useEffect(() => {
+        console.log(pageNo <= totalPages)
         if (!moviesList?.length)
             dispatch({ type: ActionTypes.FETCH_MOVIES, pageNo });
 
@@ -72,7 +75,7 @@ const SearchMovies = ({ navigation }) => {
 
     const renderItem = useCallback(({ item, index }) => {
         return (<MovieCard cardStyle={styles.cardStyle} movie={item} onPressFavorite={onPressFavorite} index={index} />);
-    }, [dataSource]);
+    }, [dataSource, searchList]);
 
     const keyExtractor = useCallback((item) => item?.id?.toString(), []);
 
@@ -80,7 +83,9 @@ const SearchMovies = ({ navigation }) => {
         setShowLoader(!showLoader);
 
         setPageNo(pageNo + 1);
-        dispatch({ type: ActionTypes.FETCH_MOVIES, pageNo });
+
+        if (pageNo <= totalPages)
+            dispatch({ type: ActionTypes.FETCH_MOVIES, pageNo });
         setTimeout(() => setShowLoader(!showLoader), 2000);
     };
 
@@ -89,15 +94,17 @@ const SearchMovies = ({ navigation }) => {
     );
 
     const onSearch = ({ nativeEvent }) => {
-        const searchText = nativeEvent?.text?.trim().toLowerCase();
+        setShowLoader(!showLoader);
+        const searchText = nativeEvent?.text?.toLowerCase();
 
-        if (searchText) {
-            const searchList = dataSource?.filter(item => item?.title?.toLowerCase().includes(searchText));
-
-            setSearchList(searchList);
+        if (searchText?.length > 2) {
+            dispatch({ type: ActionTypes.FETCH_SEARCH_MOVIES, pageNo, query: searchText });
+            setSearchList(searchMoviesList);
         } else {
             setSearchList([]);
         }
+
+        setShowLoader(!showLoader);
     };
 
     return (

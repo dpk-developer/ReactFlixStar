@@ -10,4 +10,5 @@ export default {
 
   /*** Define All End Points Url Below Here ***/
   MOVIES_URL: '3/discover/movie?',
+  SEARCH_MOVIES_URL: '3/search/movie?',
 };
